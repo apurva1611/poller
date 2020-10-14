@@ -1,0 +1,33 @@
+version: '2.3'
+services:
+
+  zookeeper:
+    hostname: zookeeper
+    image: wurstmeister/zookeeper
+    expose:
+    - "2181"
+    ports:
+    - "2181:2181"
+  
+  kafka:
+    image: wurstmeister/kafka
+    env_file:
+    - kafka/kafka-variables.env
+    environment:
+      KAFKA_CREATE_TOPICS: topic1:1:1
+    depends_on:
+    - zookeeper
+    ports:
+    - '9092:9092'
+    - '8082:8082'
+    - '8083:8083'
+
+  poller:
+    build:
+      context: poller
+    environment:
+      kafkaURL: kafka:9092
+      topic: topic1
+    restart: always
+    depends_on: 
+    - kafka

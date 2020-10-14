@@ -16,5 +16,5 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o poller
 
 # final stage
 FROM scratch
-COPY --from=builder /app/poller /app
+COPY --from=builder app/poller /app/
 ENTRYPOINT ["/app/poller"]

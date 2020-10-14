@@ -23,8 +23,8 @@ services:
     - '8083:8083'
 
   poller:
-    build:
-      context: poller
+    container_name: poller
+    build: .
     environment:
       kafkaURL: kafka:9092
       topic: topic1

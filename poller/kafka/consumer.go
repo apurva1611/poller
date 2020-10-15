@@ -52,3 +52,25 @@ func Consume(kafkaURL, topic, groupID string) {
 		}
 	}
 }
+
+func TestWeatherMock(kafkaURL, topic, groupID string) {
+	reader := getKafkaReader(kafkaURL, topic, groupID)
+	defer reader.Close()
+	for {
+		m, err := reader.ReadMessage(context.Background())
+		if err != nil {
+			continue
+		}
+
+		//log.Print(string(m.Value))
+
+		weather := model.Weather{}
+		err = json.Unmarshal(m.Value, &weather)
+		if err != nil {
+			log.Print(err.Error())
+			continue
+		}
+
+		log.Printf("%v : %v", string(m.Key), weather)
+	}
+}

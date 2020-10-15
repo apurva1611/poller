@@ -171,3 +171,25 @@ func DeleteWatch(watch model.WATCH) {
 	_, _ = db.Exec("DELETE FROM pollerdb.watch WHERE watch_id = ?", watch.ID)
 	_, _ = db.Exec("DELETE FROM pollerdb.alert WHERE watch_id = ?", watch.ID)
 }
+
+func GetAllZipCodes() []string {
+	results, err := db.Query("SELECT DISTINCT zipcode FROM pollerdb.watch")
+	if err != nil {
+		panic(err.Error()) // proper error handling instead of panic in your app
+	}
+
+	// get unique zipcodes
+	list := make([]string, 0)
+
+	for results.Next() {
+		var zipcode string
+		err = results.Scan(&zipcode)
+		if err != nil {
+			continue
+		}
+
+		list = append(list, zipcode)
+	}
+
+	return list
+}

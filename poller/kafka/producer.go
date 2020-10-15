@@ -4,9 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
-	"poller/model"
+	"poller/db"
 	"time"
 )
 
@@ -18,10 +17,29 @@ func newKafkaWriter(kafkaURL, topic string) *kafka.Writer {
 	})
 }
 
-func Produce(kafkaURL, topic string) {
+func Produce(kafkaURL, topic string, minutes int) {
+	writer := newKafkaWriter(kafkaURL, topic)
+	for {
+		time.Sleep(time.Duration(minutes) * time.Minute)
+		zipCodesSet := db.GetAllZipCodes()
+		for _, zipCode := range zipCodesSet {
+			weather := GetWeatherData(zipCode)
 
+			weatherJson, _ := json.Marshal(weather)
+			msg := kafka.Message{
+				Key:   []byte(zipCode),
+				Value: weatherJson,
+			}
+
+			err := writer.WriteMessages(context.Background(), msg)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+	}
 }
 
+/*
 func TestWatchMock(kafkaURL, topic string) {
 	writer := newKafkaWriter(kafkaURL, topic)
 	for i := 0; ; i++ {
@@ -58,4 +76,4 @@ func TestWatchMock(kafkaURL, topic string) {
 		}
 		time.Sleep(1 * time.Second)
 	}
-}
+} */

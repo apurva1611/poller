@@ -19,7 +19,7 @@ func main() {
 	minutes, err := strconv.Atoi(minutesStr)
 	if err != nil {
 		// default
-		minutes = 1
+		minutes = 10
 	}
 
 	db.Init()

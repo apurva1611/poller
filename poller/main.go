@@ -4,6 +4,7 @@ import (
 	"os"
 	"poller/db"
 	"poller/kafka"
+	"strconv"
 )
 
 func main() {
@@ -13,10 +14,17 @@ func main() {
 	consumeGroup := "watch-group"
 
 	produceTopic := "weather"
+	minutesStr := os.Getenv("minutes")
+
+	minutes, err := strconv.Atoi(minutesStr)
+	if err != nil {
+		// default
+		minutes = 1
+	}
 
 	db.Init()
 	defer db.CloseDB()
 
 	go kafka.Consume(kafkaURL, consumeTopic, consumeGroup)
-	kafka.Produce(kafkaURL, produceTopic)
+	kafka.Produce(kafkaURL, produceTopic, minutes)
 }

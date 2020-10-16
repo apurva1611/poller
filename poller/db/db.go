@@ -168,9 +168,43 @@ func insertAlert(alert model.ALERT) bool {
 	return true
 }
 
+func deleteAlert(alert model.ALERT) {
+	_, _ = db.Exec("DELETE FROM pollerdb.alert WHERE alert_id = ?", alert.ID)
+}
+
 func DeleteWatch(watch model.WATCH) {
 	_, _ = db.Exec("DELETE FROM pollerdb.watch WHERE watch_id = ?", watch.ID)
 	_, _ = db.Exec("DELETE FROM pollerdb.alert WHERE watch_id = ?", watch.ID)
+}
+
+func UpdateWatch(watch model.WATCH) {
+	update, err := db.Prepare(`UPDATE pollerdb.watch SET watch_id=?, user_id=?, zipcode=?, alerts=?, watch_created=?, watch_updated=?
+										WHERE watch_id=?`)
+
+	if err != nil {
+		log.Printf(err.Error())
+		return
+	}
+
+	// delete old alerts
+	prevWatch := queryByWatchID(watch.ID)
+	for _, alert := range prevWatch.Alerts {
+		deleteAlert(alert)
+	}
+
+	alerts, err := json.Marshal(&watch.Alerts)
+	_, err = update.Exec(watch.ID, watch.UserId, watch.Zipcode, alerts, watch.WatchCreated, watch.WatchUpdated, watch.ID)
+	if err != nil {
+		log.Printf(err.Error())
+		return
+	}
+
+	// insert new alerts
+	for _, alert := range watch.Alerts {
+		insertAlert(alert)
+	}
+
+	return
 }
 
 func GetAllZipCodes() []string {
@@ -216,6 +250,24 @@ func GetAllWatchesByZipcode(zipcode string) []model.WATCH {
 	}
 
 	return watches
+}
+
+func queryByWatchID(id string) *model.WATCH {
+	fmt.Println("Reached in watch query")
+	watch := model.WATCH{}
+	err := db.QueryRow(`SELECT watch_id, user_id, zipcode, watch_created,watch_updated
+							FROM pollerdb.watch WHERE watch_id = ?`, id).Scan(&watch.ID, &watch.UserId, &watch.Zipcode, &watch.WatchCreated, &watch.WatchUpdated)
+	if err != nil {
+		log.Printf(err.Error())
+		return nil
+	}
+	alerts := queryAlertsByWatchId(id)
+	watch.Alerts = *alerts
+	for _, element := range *alerts {
+		watch.Alerts = append(watch.Alerts, element)
+	}
+
+	return &watch
 }
 
 func queryAlertsByWatchId(id string) *[]model.ALERT {

@@ -30,7 +30,7 @@ func Produce(kafkaURL, topic string, minutes int) {
 			weatherTopicData := model.WeatherTopicData{}
 			weatherTopicData.Zipcode = zipCode
 			weatherTopicData.WeatherData = *weather
-			weatherTopicData.Watchs = db.GetAllWatchsByZipcode(zipCode)
+			weatherTopicData.Watchs = db.GetAllWatchesByZipcode(zipCode)
 
 			weatherTopicDataJSON, _ := json.Marshal(weatherTopicData)
 			msg := kafka.Message{

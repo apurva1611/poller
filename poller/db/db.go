@@ -195,28 +195,49 @@ func GetAllZipCodes() []string {
 	return list
 }
 
-func GetAllWatchsByZipcode(zipcode string) []model.WATCH {
-	var watch []model.WATCH
-	// rows,err := db.Query(`SELECT alert_id,field_type, operator, value,alert_created,alert_updated
-	// 						FROM webappdb.alert WHERE watch_id = ?`, id)
-	// defer rows.Close()
-	// for rows.Next() {
-	// 	alert := ALERT{}
-	// 	err = rows.Scan(&alert.ID,&alert.FieldType,&alert.Operator, &alert.Value,&alert.AlertCreated,&alert.AlertUpdated)
-	// 	if err != nil {
-	// 	// handle this error
-	// 	panic(err)
-	// 	}
-	// 	alerts = append(alerts, alert)
+func GetAllWatchesByZipcode(zipcode string) []model.WATCH {
+	watches := make([]model.WATCH, 0)
 
-	// }
-	// // get any error encountered during iteration
-	// err = rows.Err()
-	// if err != nil {
-	// 	log.Printf(err.Error())
-	// 	return nil
-	// }
+	results, err := db.Query(`SELECT watch_id, user_id, zipcode, watch_created, watch_updated
+							FROM pollerdb.watch WHERE zipcode = ?`, zipcode)
+	if err != nil {
+		log.Printf(err.Error())
+		return nil
+	}
 
-	return watch
+	for results.Next() {
+		watch := model.WATCH{}
+		err = results.Scan(&watch.ID, &watch.UserId, &watch.Zipcode, &watch.WatchCreated, &watch.WatchUpdated)
+		if err != nil {
+			continue
+		}
+		watch.Alerts = *queryAlertsByWatchId(watch.ID)
+		watches = append(watches, watch)
+	}
 
+	return watches
+}
+
+func queryAlertsByWatchId(id string) *[]model.ALERT {
+	var alerts []model.ALERT
+	rows, err := db.Query(`SELECT alert_id, field_type, operator, value, alert_created, alert_updated 
+							FROM pollerdb.alert WHERE watch_id = ?`, id)
+	defer rows.Close()
+	for rows.Next() {
+		alert := model.ALERT{}
+		err = rows.Scan(&alert.ID, &alert.FieldType, &alert.Operator, &alert.Value, &alert.AlertCreated, &alert.AlertUpdated)
+		if err != nil {
+			continue
+		}
+		alerts = append(alerts, alert)
+
+	}
+	// get any error encountered during iteration
+	err = rows.Err()
+	if err != nil {
+		log.Printf(err.Error())
+		return nil
+	}
+
+	return &alerts
 }

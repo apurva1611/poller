@@ -48,7 +48,7 @@ func Consume(kafkaURL, topic, groupID string) {
 		} else if strings.HasPrefix(messageKey, "delete") {
 			db.DeleteWatch(watch)
 		} else if strings.HasPrefix(messageKey, "update") {
-			// will update
+			db.UpdateWatch(watch)
 		}
 	}
 }

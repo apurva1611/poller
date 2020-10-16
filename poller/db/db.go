@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"log"
 	"poller/model"
 	"time"
+
+	"github.com/google/uuid"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -192,4 +193,30 @@ func GetAllZipCodes() []string {
 	}
 
 	return list
+}
+
+func GetAllWatchsByZipcode(zipcode string) []model.WATCH {
+	var watch []model.WATCH
+	// rows,err := db.Query(`SELECT alert_id,field_type, operator, value,alert_created,alert_updated
+	// 						FROM webappdb.alert WHERE watch_id = ?`, id)
+	// defer rows.Close()
+	// for rows.Next() {
+	// 	alert := ALERT{}
+	// 	err = rows.Scan(&alert.ID,&alert.FieldType,&alert.Operator, &alert.Value,&alert.AlertCreated,&alert.AlertUpdated)
+	// 	if err != nil {
+	// 	// handle this error
+	// 	panic(err)
+	// 	}
+	// 	alerts = append(alerts, alert)
+
+	// }
+	// // get any error encountered during iteration
+	// err = rows.Err()
+	// if err != nil {
+	// 	log.Printf(err.Error())
+	// 	return nil
+	// }
+
+	return watch
+
 }

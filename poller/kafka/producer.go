@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/segmentio/kafka-go"
 	"poller/db"
+	"poller/model"
 	"time"
+
+	"github.com/segmentio/kafka-go"
 )
 
 func newKafkaWriter(kafkaURL, topic string) *kafka.Writer {
@@ -25,10 +27,15 @@ func Produce(kafkaURL, topic string, minutes int) {
 		for _, zipCode := range zipCodesSet {
 			weather := GetWeatherData(zipCode)
 
-			weatherJson, _ := json.Marshal(weather)
+			weatherTopicData := model.WeatherTopicData{}
+			weatherTopicData.Zipcode = zipCode
+			weatherTopicData.WeatherData = *weather
+			weatherTopicData.Watchs = db.GetAllWatchsByZipcode(zipCode)
+
+			weatherTopicDataJSON, _ := json.Marshal(weatherTopicData)
 			msg := kafka.Message{
 				Key:   []byte(zipCode),
-				Value: weatherJson,
+				Value: weatherTopicDataJSON,
 			}
 
 			err := writer.WriteMessages(context.Background(), msg)

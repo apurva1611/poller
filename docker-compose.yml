@@ -1,0 +1,50 @@
+version: '2.3'
+services:
+
+  zookeeper:
+    hostname: zookeeper
+    image: wurstmeister/zookeeper
+    expose:
+    - "2181"
+    ports:
+    - "2181:2181"
+  
+  kafka:
+    image: wurstmeister/kafka
+    env_file:
+    - kafka/kafka-variables.env
+    environment:
+      KAFKA_CREATE_TOPICS: watch:1:1,weather:1:1
+    depends_on:
+    - zookeeper
+    ports:
+    - '9092:9092'
+    - '8082:8082'
+    - '8083:8083'
+
+  mysql:
+    image: mysql
+    container_name: mysql
+    volumes:
+      - dbdata:/var/lib/mysql
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=pass1234
+      - MYSQL_DATABASE=pollerdb
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=pass1234
+    ports:
+      - "3306:3306"
+
+  poller:
+    container_name: poller
+    build: .
+    environment:
+      kafkaURL: kafka:9092
+    restart: always
+    depends_on:
+    - mysql 
+    - kafka
+
+volumes:
+  dbdata:

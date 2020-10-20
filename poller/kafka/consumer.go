@@ -3,11 +3,12 @@ package kafka
 import (
 	"context"
 	"encoding/json"
-	"github.com/segmentio/kafka-go"
 	"log"
 	"poller/db"
 	"poller/model"
 	"strings"
+
+	"github.com/segmentio/kafka-go"
 )
 
 func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {

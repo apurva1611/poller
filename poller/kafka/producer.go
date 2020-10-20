@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"poller/db"
 	"poller/model"
 	"time"
@@ -20,7 +21,9 @@ func newKafkaWriter(kafkaURL, topic string) *kafka.Writer {
 }
 
 func Produce(kafkaURL, topic string, minutes int) {
+	fmt.Println("create new writer")
 	writer := newKafkaWriter(kafkaURL, topic)
+	log.Print("new kafka writer in created")
 	for {
 		time.Sleep(time.Duration(minutes) * time.Minute)
 		zipCodesSet := db.GetAllZipCodes()
@@ -31,8 +34,8 @@ func Produce(kafkaURL, topic string, minutes int) {
 			weatherTopicData.Zipcode = zipCode
 			weatherTopicData.WeatherData = *weather
 			weatherTopicData.Watchs = db.GetAllWatchesByZipcode(zipCode)
-
 			weatherTopicDataJSON, _ := json.Marshal(weatherTopicData)
+			fmt.Println("getting watches as per zipcode in producer: " + string(weatherTopicDataJSON))
 			msg := kafka.Message{
 				Key:   []byte(zipCode),
 				Value: weatherTopicDataJSON,
@@ -42,6 +45,8 @@ func Produce(kafkaURL, topic string, minutes int) {
 			if err != nil {
 				fmt.Println(err)
 			}
+
+			fmt.Println("producer success")
 		}
 	}
 }

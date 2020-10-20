@@ -173,6 +173,7 @@ func deleteAlert(alert model.ALERT) {
 }
 
 func DeleteWatch(watch model.WATCH) {
+
 	fmt.Printf(watch.ID)
 
 	fmt.Println("delete alert")

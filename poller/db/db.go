@@ -9,8 +9,6 @@ import (
 	"poller/model"
 	"time"
 
-	"github.com/google/uuid"
-
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -133,14 +131,6 @@ func InsertWatch(watch model.WATCH) bool {
 	}
 
 	log.Print(res.RowsAffected())
-
-	for i := range watch.Alerts {
-		uid, _ := uuid.NewRandom()
-		watch.Alerts[i].ID = uid.String()
-		watch.Alerts[i].WatchId = watch.ID
-		watch.Alerts[i].AlertCreated = watch.WatchCreated
-		watch.Alerts[i].AlertUpdated = watch.WatchCreated
-	}
 
 	for _, a := range watch.Alerts {
 		if !insertAlert(a) {

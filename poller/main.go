@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"poller/db"
 	"poller/kafka"
@@ -19,12 +20,14 @@ func main() {
 	minutes, err := strconv.Atoi(minutesStr)
 	if err != nil {
 		// default
-		minutes = 10
+		minutes = 5
 	}
 
 	db.Init()
 	defer db.CloseDB()
 
 	go kafka.Consume(kafkaURL, consumeTopic, consumeGroup)
+
+	fmt.Println("now to producer")
 	kafka.Produce(kafkaURL, produceTopic, minutes)
 }

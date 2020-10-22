@@ -154,7 +154,7 @@ func insertAlert(alert model.ALERT) bool {
 		log.Printf(err.Error())
 		return false
 	}
-
+	log.Print("insert alert")
 	return true
 }
 
@@ -163,8 +163,19 @@ func deleteAlert(alert model.ALERT) {
 }
 
 func DeleteWatch(watch model.WATCH) {
-	_, _ = db.Exec("DELETE FROM pollerdb.watch WHERE watch_id = ?", watch.ID)
+
+	fmt.Printf(watch.ID)
+
+	fmt.Println("delete alert")
 	_, _ = db.Exec("DELETE FROM pollerdb.alert WHERE watch_id = ?", watch.ID)
+
+	fmt.Println("delete watch")
+	_, err := db.Exec("DELETE FROM pollerdb.watch WHERE watch_id = ?", watch.ID)
+
+	if err != nil {
+		log.Printf(err.Error())
+	}
+
 }
 
 func UpdateWatch(watch model.WATCH) {

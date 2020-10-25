@@ -2,13 +2,20 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 	"poller/db"
 	"poller/kafka"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	router := SetupRouter()
+	log.Fatal(router.Run(":8080"))
+
 	// get kafka writer using environment variables.
 	kafkaURL := os.Getenv("kafkaURL")
 	consumeTopic := "watch"
@@ -20,7 +27,7 @@ func main() {
 	minutes, err := strconv.Atoi(minutesStr)
 	if err != nil {
 		// default
-		minutes = 5
+		minutes = 1
 	}
 
 	db.Init()
@@ -30,4 +37,15 @@ func main() {
 
 	fmt.Println("now to producer")
 	kafka.Produce(kafkaURL, produceTopic, minutes)
+}
+
+func SetupRouter() *gin.Engine {
+	router := gin.Default()
+	v1 := router.Group("/v1")
+	v1.GET("/healthcheck", healthcheck)
+	return router
+}
+
+func healthcheck(c *gin.Context) {
+	c.JSON(http.StatusOK, "ok")
 }

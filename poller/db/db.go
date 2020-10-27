@@ -16,7 +16,7 @@ var db *sql.DB
 
 const (
 	username = "root"
-	password = "pass1234"
+	password = "SLdoxzR1Wb"
 	hostname = "mysql:3306"
 	dbname   = "pollerdb"
 )

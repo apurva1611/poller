@@ -13,9 +13,6 @@ import (
 )
 
 func main() {
-	router := SetupRouter()
-	log.Fatal(router.Run(":8080"))
-
 	// get kafka writer using environment variables.
 	kafkaURL := os.Getenv("kafkaURL")
 	consumeTopic := "watch"
@@ -36,7 +33,10 @@ func main() {
 	go kafka.Consume(kafkaURL, consumeTopic, consumeGroup)
 
 	fmt.Println("now to producer")
-	kafka.Produce(kafkaURL, produceTopic, minutes)
+	go kafka.Produce(kafkaURL, produceTopic, minutes)
+
+	router := SetupRouter()
+	log.Fatal(router.Run(":8080"))
 }
 
 func SetupRouter() *gin.Engine {

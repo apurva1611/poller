@@ -14,7 +14,7 @@ import (
 
 func main() {
 	// get kafka writer using environment variables.
-	kafkaURL := os.Getenv("kafkaURL")
+	kafkaURL := "kafka:9092"
 	consumeTopic := "watch"
 	consumeGroup := "watch-group"
 

@@ -9,8 +9,6 @@ import (
 	"poller/model"
 	"time"
 
-	"github.com/google/uuid"
-
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -18,7 +16,7 @@ var db *sql.DB
 
 const (
 	username = "root"
-	password = "pass1234"
+	password = "SLdoxzR1Wb"
 	hostname = "mysql:3306"
 	dbname   = "pollerdb"
 )
@@ -134,14 +132,6 @@ func InsertWatch(watch model.WATCH) bool {
 
 	log.Print(res.RowsAffected())
 
-	for i := range watch.Alerts {
-		uid, _ := uuid.NewRandom()
-		watch.Alerts[i].ID = uid.String()
-		watch.Alerts[i].WatchId = watch.ID
-		watch.Alerts[i].AlertCreated = watch.WatchCreated
-		watch.Alerts[i].AlertUpdated = watch.WatchCreated
-	}
-
 	for _, a := range watch.Alerts {
 		if !insertAlert(a) {
 			return false
@@ -164,7 +154,7 @@ func insertAlert(alert model.ALERT) bool {
 		log.Printf(err.Error())
 		return false
 	}
-
+	log.Print("insert alert")
 	return true
 }
 
@@ -173,8 +163,19 @@ func deleteAlert(alert model.ALERT) {
 }
 
 func DeleteWatch(watch model.WATCH) {
-	_, _ = db.Exec("DELETE FROM pollerdb.watch WHERE watch_id = ?", watch.ID)
+
+	fmt.Printf(watch.ID)
+
+	fmt.Println("delete alert")
 	_, _ = db.Exec("DELETE FROM pollerdb.alert WHERE watch_id = ?", watch.ID)
+
+	fmt.Println("delete watch")
+	_, err := db.Exec("DELETE FROM pollerdb.watch WHERE watch_id = ?", watch.ID)
+
+	if err != nil {
+		log.Printf(err.Error())
+	}
+
 }
 
 func UpdateWatch(watch model.WATCH) {

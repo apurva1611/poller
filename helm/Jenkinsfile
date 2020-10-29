@@ -47,6 +47,8 @@ node {
      def image = "achirashah/poller:poller"
      def pollerReleaseName = "poller"
      def kubernetesCredentials = 'KubeCreds'
+     def hostname = ''
+     def dockerconfigjson = ''
 
     stage('Clone repository') {
         /* Cloning the Repository to our Workspace */
@@ -86,10 +88,10 @@ node {
                 echo "Nothing to deploy in poller"
             }
         }
-        catch (Exception err){
+    }
+    catch (Exception err){
             err_msg = "Test had Exception(${err})"
             currentBuild.result = 'FAILURE'
             error "FAILED - Stopping build for Error(${err_msg})"
         }
-    }
 }

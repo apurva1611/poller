@@ -17,7 +17,7 @@ func main() {
 	log.Fatal(router.Run(":8080"))
 
 	// get kafka writer using environment variables.
-	kafkaURL := os.Getenv("kafkaURL")
+	kafkaURL := "kafka:9092"
 	consumeTopic := "watch"
 	consumeGroup := "watch-group"
 
@@ -42,10 +42,24 @@ func main() {
 func SetupRouter() *gin.Engine {
 	router := gin.Default()
 	v1 := router.Group("/v1")
-	v1.GET("/healthcheck", healthcheck)
+	v1.GET("/healthcheck", healthCheck)
 	return router
 }
 
-func healthcheck(c *gin.Context) {
+func healthCheck(c *gin.Context) {
+	kafkaURL := "kafka:9092"
+	err := db.HealthCheck()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, "db health check failed.")
+		os.Exit(3)
+	}
+
+	err = kafka.KafkaHealthCheck(kafkaURL)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, "kafka health check failed.")
+		os.Exit(4)
+	}
+
 	c.JSON(http.StatusOK, "ok")
 }

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"poller/model"
 	"time"
 
@@ -16,8 +17,8 @@ var db *sql.DB
 
 const (
 	username = "root"
-	password = "SLdoxzR1Wb"
-	hostname = "mysql:3306"
+	password = "pass1234"
+	port     = ":3306"
 	dbname   = "pollerdb"
 )
 
@@ -27,6 +28,8 @@ func Init() {
 }
 
 func dsn() string {
+	rdsurl := os.Getenv("rdsurl")
+	hostname := rdsurl + port
 	return fmt.Sprintf("%s:%s@tcp(%s)/%s", username, password, hostname, dbname)
 }
 
@@ -41,6 +44,14 @@ func openDB() {
 
 func CloseDB() {
 	db.Close()
+}
+
+func HealthCheck() error {
+	err := db.Ping()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func createDb() {

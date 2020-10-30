@@ -44,7 +44,7 @@ def helmInstallPoller (pollerReleaseName) {
 
 node {
      def changedFiles
-     def image = "achirashah/poller:poller"
+     def image = 
      def pollerReleaseName = "poller"
      def kubernetesCredentials = 'KubeCreds'
 

@@ -43,14 +43,12 @@ def helmInstallPoller (pollerReleaseName) {
 }
 
 node {
-
      def pollerReleaseName = "poller"
 
 
     stage('Clone repository') {
         /* Cloning the Repository to our Workspace */
         checkout scm
-
 
         sh "export aws_access_key_id=${env.awsKey}"
         sh "export aws_secret_access_key=${env.awsSecret}"

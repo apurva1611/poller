@@ -12,9 +12,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const kafkaURL = "kafka:9092"
+
 func main() {
 	// get kafka writer using environment variables.
-	kafkaURL := "kafka:9092"
 	consumeTopic := "watch"
 	consumeGroup := "watch-group"
 
@@ -47,6 +48,7 @@ func SetupRouter() *gin.Engine {
 }
 
 func healthCheck(c *gin.Context) {
+<<<<<<< HEAD
 	kafkaURL := "kafka:9092"
 	err := db.HealthCheck()
 	if err != nil {
@@ -59,6 +61,18 @@ func healthCheck(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, "kafka health check failed.")
 		os.Exit(4)
+=======
+	err := db.HealthCheck()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, "db health check failed.")
+		os.Exit(5)
+	}
+
+	err = kafka.HealthCheck(kafkaURL)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, "kafka health check failed.")
+		os.Exit(6)
+>>>>>>> 417936edb0b368ff2e84e3bed023ab49d51ed6e6
 	}
 
 	c.JSON(http.StatusOK, "ok")

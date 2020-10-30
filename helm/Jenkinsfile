@@ -25,7 +25,7 @@ def createNamespace (name) {
 
     script {
        // sh "helm repo add helm ${HELM_REPO}; helm repo update"
-       sh "/usr/local/bin/helm upgrade --dry-run --debug --install ${pollerReleaseName} --namespace=api --set image.repository='${image}',secret.regcred.dockerconfigjson=${env.dockerString},database.url='${hostname}',secret.awscred.aws_key=${env.awsKey},secret.awscred.secret_key=${env.awsSecret},configmap.S3_BUCKET_NAME=${env.S3BucketName} --debug ./helm/poller/"
+       sh "/usr/local/bin/helm upgrade --dry-run --debug --install ${pollerReleaseName} --namespace=api --set image.repository='${image}',secret.regcred.dockerconfigjson=${env.dockerString},configmap.rdsurl='${env.hostname}',secret.awscred.aws_key=${env.awsKey},secret.awscred.secret_key=${env.awsSecret},configmap.S3_BUCKET_NAME=${env.S3BucketName} --debug ./helm/poller/"
     }
 }
 
@@ -37,7 +37,7 @@ def helmInstallPoller (pollerReleaseName) {
 
     script {
        // sh "helm repo add helm ${HELM_REPO}; helm repo update"
-       sh "/usr/local/bin/helm upgrade --install ${pollerReleaseName} --namespace=api --set image.repository='${image}',secret.regcred.dockerconfigjson=${env.dockerString},database.url='${hostname}',secret.awscred.aws_key=${env.awsKey},secret.awscred.secret_key=${env.awsSecret},configmap.S3_BUCKET_NAME=${env.S3BucketName} --debug ./helm/poller/"
+       sh "/usr/local/bin/helm upgrade --install ${pollerReleaseName} --namespace=api --set image.repository='${image}',secret.regcred.dockerconfigjson=${env.dockerString},configmap.rdsurl='${env.hostname}',secret.awscred.aws_key=${env.awsKey},secret.awscred.secret_key=${env.awsSecret},configmap.S3_BUCKET_NAME=${env.S3BucketName} --debug ./helm/poller/"
     }
 }
 
@@ -48,7 +48,6 @@ node {
     stage('Clone repository') {
         /* Cloning the Repository to our Workspace */
         checkout scm
-        
 
         sh "export aws_access_key_id=${env.awsKey}"
         sh "export aws_secret_access_key=${env.awsSecret}"
@@ -59,15 +58,14 @@ node {
         echo "${env.ServerUrl}"
     }
 
-     try {
+    try {
         stage ('helm test') {
             helmDryrunPoller (pollerReleaseName)
         }
-        stage('Deploy Poller'){
+        stage('Deploy poller'){
             createNamespace('api')
             helmInstallPoller(pollerReleaseName)
         }
-
     }
     catch (Exception err){
             err_msg = "Test had Exception(${err})"

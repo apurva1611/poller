@@ -26,7 +26,7 @@ def helmDryrunPoller (pollerReleaseName) {
 
     script {
        // sh "helm repo add helm ${HELM_REPO}; helm repo update"
-       sh "upgrade --dry-run --debug --install ${pollerReleaseName} --namespace=api --set image.repository='${image}' database.url='${hostname}',secret.awscred.aws_key=${env.awsKey},secret.awscred.secret_key=${env.awsSecret},secret.regcred.dockerconfigjson=${env.dockerString} --debug ./poller/"
+       sh "/usr/local/bin/helm upgrade --dry-run --debug --install ${pollerReleaseName} --namespace=api --set image.repository='${image}',secret.regcred.dockerconfigjson=${env.dockerString},database.url='${hostname}',secret.awscred.aws_key=${env.awsKey},secret.awscred.secret_key=${env.awsSecret},configmap.S3_BUCKET_NAME=${env.S3BucketName} --debug ./helm/poller/"
     }
 }
 
@@ -38,60 +38,55 @@ def helmInstallPoller (pollerReleaseName) {
 
     script {
        // sh "helm repo add helm ${HELM_REPO}; helm repo update"
-       sh "helm upgrade --install ${pollerReleaseName} --namespace=api --set image.repository='${image}' database.url='${hostname}',secret.awscred.aws_key=${env.awsKey},secret.awscred.secret_key=${env.awsSecret},secret.regcred.dockerconfigjson=${env.dockerString} --debug ./poller/"
+       sh "/usr/local/bin/helm upgrade --install ${pollerReleaseName} --namespace=api --set image.repository='${image}',secret.regcred.dockerconfigjson=${env.dockerString},database.url='${hostname}',secret.awscred.aws_key=${env.awsKey},secret.awscred.secret_key=${env.awsSecret},configmap.S3_BUCKET_NAME=${env.S3BucketName} --debug ./helm/poller/"
+    }
+}
+
+/*
+    Helm install webapp application
+*/
+def helmFindingWebappIP (webappReleaseName) {
+    echo "Finding IP of Webapp application"
+
+    script {
+       sh "sleep 50"
+       echo "Finding webapp ip"
+       webappIp = sh(returnStdout: true, script: "kubectl describe services webapp --namespace=api | grep elb.amazonaws.com | grep LoadBalancer | awk '{print \$3}' | tr -d '\n'")
+       echo "${webappIp}"
     }
 }
 
 node {
-     def changedFiles
-     def image = "achirashah/poller:poller"
+
      def pollerReleaseName = "poller"
-     def kubernetesCredentials = 'KubeCreds'
-     def hostname = ''
-     def dockerconfigjson = ''
+
 
     stage('Clone repository') {
         /* Cloning the Repository to our Workspace */
         checkout scm
-        sh 'git diff --name-only --diff-filter=ADMR @~..@ > output.txt'
-        changedFiles = readFile 'output.txt'
-        echo "Changed files - ${changedFiles}"
-    }
 
-    stage('Startup activities'){
+
+        sh "export aws_access_key_id=${env.awsKey}"
+        sh "export aws_secret_access_key=${env.awsSecret}"
+        sh "export aws_profile=${env.aws_profile}"
+        sh "export aws_region=${env.aws_region}"
+        sh "export KOPS_STATE_STORE=${env.S3BucketName}"
+        sh "AWS_PROFILE=${env.aws_profile} AWS_ACCESS_KEY_ID=${env.awsKey} AWS_SECRET_ACCESS_KEY=${env.awsSecret} kops export kubecfg ${env.YOUR_CLUSTER_NAME} --state=${env.S3BucketName}"
         echo "${env.ServerUrl}"
-        withKubeConfig([credentialsId: kubernetesCredentials,
-                        serverUrl: "${env.ServerUrl}"
-                        ]) {
-          sh "kubectl cluster-info"
-        }
-
-
-        // Init helm client
-        sh "helm init"
     }
+
     try {
         stage ('helm test') {
             helmDryrunPoller (pollerReleaseName)
         }
         stage('Deploy poller'){
-            if (changedFiles?.trim().contains("poller")){
-                echo "Deploying poller"
-                withKubeConfig([credentialsId: kubernetesCredentials,
-                                 serverUrl: "${env.ServerUrl}"
-                              ]) {
-                       createNamespace('api')
-                       helmInstallPoller(pollerReleaseName)
-                }
-
-            }else{
-                echo "Nothing to deploy in poller"
-            }
+            createNamespace('api')
+            helmInstallPoller(pollerReleaseName)
         }
     }
     catch (Exception err){
             err_msg = "Test had Exception(${err})"
             currentBuild.result = 'FAILURE'
             error "FAILED - Stopping build for Error(${err_msg})"
-        }
+    }
 }

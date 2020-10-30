@@ -56,7 +56,7 @@ configmap:
   name: env-config
   RDS_DB_NAME: pollerdb
   REGION: us-east-1   
-  S3_BUCKET_NAME: mypollerbucket
+  S3_BUCKET_NAME: 
   rdsurl:
 
 secret:

@@ -41,7 +41,7 @@ func Consume(kafkaURL, topic, groupID string) {
 			continue
 		}
 
-		//log.Print(string(m.Value))
+		log.Printf("CONSUME Topic: %s, Message ID %s", topic, string(m.Key))
 
 		watch := model.WATCH{}
 		err = json.Unmarshal(m.Value, &watch)
@@ -49,8 +49,6 @@ func Consume(kafkaURL, topic, groupID string) {
 			log.Print(err.Error())
 			continue
 		}
-
-		log.Print(watch)
 
 		messageKey := string(m.Key)
 

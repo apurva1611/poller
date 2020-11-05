@@ -33,5 +33,7 @@ func GetWeatherData(zipCode string) *model.Weather {
 		return nil
 	}
 
+	log.Printf("OPENWEATHER API CALL zipcode: %s", zipCode)
+
 	return &weather
 }

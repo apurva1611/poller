@@ -3,7 +3,7 @@ package kafka
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"poller/model"
 )
@@ -14,7 +14,7 @@ func GetWeatherData(zipCode string) *model.Weather {
 	url := "http://api.openweathermap.org/data/2.5/weather?zip=" + zipCode + "&units=imperial&appid=" + apiKey
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Print(err.Error())
+		log.Error(err.Error())
 		return nil
 	}
 
@@ -22,18 +22,18 @@ func GetWeatherData(zipCode string) *model.Weather {
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		log.Print(err.Error())
+		log.Error(err.Error())
 		return nil
 	}
 
 	weather := model.Weather{}
 	err = json.Unmarshal(body, &weather)
 	if err != nil {
-		log.Print(err.Error())
+		log.Error(err.Error())
 		return nil
 	}
 
-	log.Printf("OPENWEATHER API CALL zipcode: %s", zipCode)
+	log.Info("OPEN WEATHER API CALL zipcode: %s", zipCode)
 
 	return &weather
 }

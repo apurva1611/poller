@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"poller/model"
 	"time"
@@ -37,7 +37,7 @@ func openDB() {
 	var err error
 	db, err = sql.Open("mysql", dsn())
 	if err != nil {
-		log.Printf("Error %s when opening DB\n", err)
+		log.Error("Error %s when opening DB\n", err)
 		panic(err)
 	}
 }
@@ -63,16 +63,16 @@ func createDb() {
 	res, err := db.ExecContext(ctx, "CREATE DATABASE IF NOT EXISTS "+dbname)
 
 	if err != nil {
-		log.Printf("Error %s when creating DB\n", err)
+		log.Error("Error %s when creating DB\n", err)
 		return
 	}
 
 	no, err := res.RowsAffected()
 	if err != nil {
-		log.Printf("Error %s when fetching rows", err)
+		log.Error("Error %s when fetching rows", err)
 		return
 	}
-	log.Printf("rows affected %d\n", no)
+	log.Info("rows affected %d\n", no)
 
 	db.SetMaxOpenConns(20)
 	db.SetMaxIdleConns(20)
@@ -83,10 +83,10 @@ func createDb() {
 
 	err = db.PingContext(ctx)
 	if err != nil {
-		log.Printf("Errors %s pinging DB", err)
+		log.Error("Errors %s pinging DB", err)
 		return
 	}
-	log.Printf("Connected to DB %s successfully\n", dbname)
+	log.Info("Connected to DB %s successfully\n", dbname)
 }
 
 func createTable() {
@@ -125,30 +125,31 @@ func InsertWatch(watch model.WATCH) bool {
 	insert, err := db.Prepare(`INSERT INTO pollerdb.watch(watch_id, user_id, zipcode, alerts, watch_created, watch_updated) 
 						VALUES (?, ?, ?, ?, ?, ?)`)
 
-	log.Print("insert p")
+	log.Info("insert pollerDb")
 
 	if err != nil {
-		log.Print(err.Error())
+		log.Error("Insert watch query of pollerDb.watch failed")
+		log.Error(err.Error())
 		return false
 	}
 
-	log.Print("insert prepare")
 	alertsJson, _ := json.Marshal(&watch.Alerts)
 
 	res, err := insert.Exec(watch.ID, watch.UserId, watch.Zipcode, alertsJson, watch.WatchCreated, watch.WatchUpdated)
 	if err != nil {
-		log.Printf(err.Error())
+		log.Error("Insert watch query of pollerDb.watch failed")
+		log.Error(err.Error())
 		return false
 	}
 
-	log.Print(res.RowsAffected())
+	log.Info(res.RowsAffected())
 
 	for _, a := range watch.Alerts {
 		if !insertAlert(a) {
 			return false
 		}
 	}
-
+	log.Info("Insert watch query of pollerDb.watch succeeded")
 	return true
 }
 
@@ -157,20 +158,23 @@ func insertAlert(alert model.ALERT) bool {
 						VALUES (?, ?, ?, ?, ?, ?, ?)`)
 
 	if err != nil {
-		log.Printf(err.Error())
+		log.Error("Insert alert query of pollerDb.alert failed")
+		log.Error(err.Error())
 		return false
 	}
 	_, err = insert.Exec(alert.ID, alert.WatchId, alert.FieldType, alert.Operator, alert.Value, alert.AlertCreated, alert.AlertUpdated)
 	if err != nil {
-		log.Printf(err.Error())
+		log.Error("Insert alert query of pollerDb.alert failed")
+		log.Error(err.Error())
 		return false
 	}
-	log.Print("insert alert")
+	log.Info("Insert alert query of pollerDb.alert succeeded")
 	return true
 }
 
 func deleteAlert(alert model.ALERT) {
 	_, _ = db.Exec("DELETE FROM pollerdb.alert WHERE alert_id = ?", alert.ID)
+	log.Info("Delete alert query of pollerDb.alert succeeded")
 }
 
 func DeleteWatch(watch model.WATCH) {
@@ -179,13 +183,17 @@ func DeleteWatch(watch model.WATCH) {
 
 	fmt.Println("delete alert")
 	_, _ = db.Exec("DELETE FROM pollerdb.alert WHERE watch_id = ?", watch.ID)
+	log.Info("Delete alert query of pollerDb.alert succeeded")
+
 
 	fmt.Println("delete watch")
 	_, err := db.Exec("DELETE FROM pollerdb.watch WHERE watch_id = ?", watch.ID)
 
 	if err != nil {
-		log.Printf(err.Error())
+		log.Error("Delete watch query of pollerDb.watch failed")
+		log.Error(err.Error())
 	}
+	log.Info("Delete watch query of pollerDb.watch succeeded")
 
 }
 
@@ -194,7 +202,8 @@ func UpdateWatch(watch model.WATCH) {
 										WHERE watch_id=?`)
 
 	if err != nil {
-		log.Printf(err.Error())
+		log.Error("Update watch query of pollerDb.watch failed")
+		log.Error(err.Error())
 		return
 	}
 
@@ -207,7 +216,8 @@ func UpdateWatch(watch model.WATCH) {
 	alerts, err := json.Marshal(&watch.Alerts)
 	_, err = update.Exec(watch.ID, watch.UserId, watch.Zipcode, alerts, watch.WatchCreated, watch.WatchUpdated, watch.ID)
 	if err != nil {
-		log.Printf(err.Error())
+		log.Error("Update watch query of pollerDb.watch failed")
+		log.Error(err.Error())
 		return
 	}
 
@@ -215,7 +225,7 @@ func UpdateWatch(watch model.WATCH) {
 	for _, alert := range watch.Alerts {
 		insertAlert(alert)
 	}
-
+	log.Info("Update watch query of pollerDb.watch succeeded")
 	return
 }
 
@@ -237,7 +247,7 @@ func GetAllZipCodes() []string {
 
 		list = append(list, zipcode)
 	}
-
+	log.Info("Get all distinct zipcodes from pollerdb watch table query called")
 	return list
 }
 
@@ -247,7 +257,8 @@ func GetAllWatchesByZipcode(zipcode string) []model.WATCH {
 	results, err := db.Query(`SELECT watch_id, user_id, zipcode, watch_created, watch_updated
 							FROM pollerdb.watch WHERE zipcode = ?`, zipcode)
 	if err != nil {
-		log.Printf(err.Error())
+		log.Error("Get all watches query from pollerdb.watch table based on zipcode fAILED")
+		log.Error(err.Error())
 		return nil
 	}
 
@@ -260,7 +271,7 @@ func GetAllWatchesByZipcode(zipcode string) []model.WATCH {
 		watch.Alerts = *queryAlertsByWatchId(watch.ID)
 		watches = append(watches, watch)
 	}
-
+	log.Info("Get all watches query from pollerdb.watch table based on zipcode")
 	return watches
 }
 
@@ -270,7 +281,8 @@ func queryByWatchID(id string) *model.WATCH {
 	err := db.QueryRow(`SELECT watch_id, user_id, zipcode, watch_created,watch_updated
 							FROM pollerdb.watch WHERE watch_id = ?`, id).Scan(&watch.ID, &watch.UserId, &watch.Zipcode, &watch.WatchCreated, &watch.WatchUpdated)
 	if err != nil {
-		log.Printf(err.Error())
+		log.Error("Get watch query from pollerdb.watch by watch id failed")
+		log.Error(err.Error())
 		return nil
 	}
 	alerts := queryAlertsByWatchId(id)
@@ -279,6 +291,7 @@ func queryByWatchID(id string) *model.WATCH {
 		watch.Alerts = append(watch.Alerts, element)
 	}
 
+	log.Info("Get watch query from pollerdb.watch by watch id")
 	return &watch
 }
 
@@ -299,9 +312,10 @@ func queryAlertsByWatchId(id string) *[]model.ALERT {
 	// get any error encountered during iteration
 	err = rows.Err()
 	if err != nil {
+		log.Error("Get alert queryfrom pollerdb.alert by watch id failed")
 		log.Printf(err.Error())
 		return nil
 	}
-
+	log.Info("Get alert query from pollerdb.alert by watch id")
 	return &alerts
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"poller/db"
 	"poller/model"
 	"time"
@@ -41,10 +41,11 @@ func Produce(kafkaURL, topic string, minutes int) {
 
 			err := writer.WriteMessages(context.Background(), msg)
 			if err != nil {
+				log.Error("Weather topic error")
 				fmt.Println(err)
 			}
 
-			log.Printf("PRODICE Topic: %s, Message ID %s", topic, string(msg.Key))
+			log.Info("PRODICE Topic: %s, Message ID %s", topic, string(msg.Key))
 		}
 	}
 }

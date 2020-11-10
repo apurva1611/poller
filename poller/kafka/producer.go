@@ -12,16 +12,6 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-func KafkaHealthCheck(kafkaURL string) error {
-	conn, err := kafka.Dial("tcp", kafkaURL)
-	if err != nil {
-		return err
-	}
-
-	conn.Close()
-	return nil
-}
-
 func newKafkaWriter(kafkaURL, topic string) *kafka.Writer {
 	return kafka.NewWriter(kafka.WriterConfig{
 		Brokers:  []string{kafkaURL},
@@ -31,9 +21,7 @@ func newKafkaWriter(kafkaURL, topic string) *kafka.Writer {
 }
 
 func Produce(kafkaURL, topic string, minutes int) {
-	fmt.Println("create new writer")
 	writer := newKafkaWriter(kafkaURL, topic)
-	log.Print("new kafka writer in created")
 	for {
 		time.Sleep(time.Duration(minutes) * time.Minute)
 		zipCodesSet := db.GetAllZipCodes()
@@ -45,7 +33,7 @@ func Produce(kafkaURL, topic string, minutes int) {
 			weatherTopicData.WeatherData = *weather
 			weatherTopicData.Watchs = db.GetAllWatchesByZipcode(zipCode)
 			weatherTopicDataJSON, _ := json.Marshal(weatherTopicData)
-			fmt.Println("getting watches as per zipcode in producer: " + string(weatherTopicDataJSON))
+
 			msg := kafka.Message{
 				Key:   []byte(zipCode),
 				Value: weatherTopicDataJSON,
@@ -56,7 +44,7 @@ func Produce(kafkaURL, topic string, minutes int) {
 				fmt.Println(err)
 			}
 
-			fmt.Println("producer success")
+			log.Printf("PRODICE Topic: %s, Message ID %s", topic, string(msg.Key))
 		}
 	}
 }

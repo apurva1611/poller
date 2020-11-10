@@ -21,4 +21,4 @@ Docker commands:
 1. List images: sudo docker images
 2. Delete images: sudo docker rmi -f 07798c70faa
 
-"Check pipeline trigger second check"
+"Check pipeline trigger second che

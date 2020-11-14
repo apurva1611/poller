@@ -1,13 +1,12 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"os"
 	"poller/db"
 	"poller/kafka"
 	"strconv"
-
+	log "github.com/sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 )
 
@@ -49,6 +48,7 @@ func healthCheck(c *gin.Context) {
 	//kafkaURL := "kafka:9092"
 	err := db.HealthCheck()
 	if err != nil {
+		log.Error("DB HEALTHCHECK: %s", err.Error())
 		log.Printf("DB HEALTHCHECK %s", err.Error())
 		c.JSON(http.StatusInternalServerError, "db health check failed.")
 		os.Exit(3)
@@ -57,12 +57,12 @@ func healthCheck(c *gin.Context) {
 	err = kafka.HealthCheck(kafkaURL)
 
 	if err != nil {
-		log.Printf("KAFKA HEALTHCHECK %s", err.Error())
+		log.Error("KAFKA HEALTHCHECK %s", err.Error())
 		c.JSON(http.StatusInternalServerError, "kafka health check failed.")
 		os.Exit(4)
 	}
 
-	log.Printf("HEALTHCHECK SUCCESSFUL")
+	log.Info("HEALTHCHECK SUCCESSFUL")
 
 	c.JSON(http.StatusOK, "ok")
 }

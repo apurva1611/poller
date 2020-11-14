@@ -79,6 +79,7 @@ func TestWeatherMock(kafkaURL, topic, groupID string) {
 			log.Print(err.Error())
 			continue
 		}
+		log.Info("Topic: " + topic)
 		log.Info("Id: " + groupID)
 		log.Info("%v : %v", string(m.Key), weather)
 	}

@@ -86,7 +86,7 @@ func createDb() {
 		log.Error("Errors %s pinging DB", err)
 		return
 	}
-	log.Info("Connected to DB %s successfully\n", dbname)
+	log.Info("Connected to poller DB %s successfully\n", dbname)
 }
 
 func createTable() {

@@ -14,6 +14,7 @@ func GetWeatherData(zipCode string) *model.Weather {
 	url := "http://api.openweathermap.org/data/2.5/weather?zip=" + zipCode + "&units=imperial&appid=" + apiKey
 	resp, err := http.Get(url)
 	if err != nil {
+		log.Error("Weather api error")
 		log.Error(err.Error())
 		return nil
 	}
@@ -22,6 +23,7 @@ func GetWeatherData(zipCode string) *model.Weather {
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
+		log.Error("Weather api error")
 		log.Error(err.Error())
 		return nil
 	}
@@ -29,6 +31,7 @@ func GetWeatherData(zipCode string) *model.Weather {
 	weather := model.Weather{}
 	err = json.Unmarshal(body, &weather)
 	if err != nil {
+		log.Error("Weather api error")
 		log.Error(err.Error())
 		return nil
 	}

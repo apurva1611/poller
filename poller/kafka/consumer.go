@@ -3,7 +3,7 @@ package kafka
 import (
 	"context"
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"poller/db"
 	"poller/model"
 	"strings"
@@ -40,17 +40,15 @@ func Consume(kafkaURL, topic, groupID string) {
 		if err != nil {
 			continue
 		}
-
-		//log.Print(string(m.Value))
+        log.Info("Consume from id: " + groupID)
+		log.Info("CONSUME Topic: %s, Message ID %s", topic, string(m.Key))
 
 		watch := model.WATCH{}
 		err = json.Unmarshal(m.Value, &watch)
 		if err != nil {
-			log.Print(err.Error())
+			log.Error(err.Error())
 			continue
 		}
-
-		log.Print(watch)
 
 		messageKey := string(m.Key)
 
@@ -81,7 +79,8 @@ func TestWeatherMock(kafkaURL, topic, groupID string) {
 			log.Print(err.Error())
 			continue
 		}
-
-		log.Printf("%v : %v", string(m.Key), weather)
+		log.Info("Topic: " + topic)
+		log.Info("Id: " + groupID)
+		log.Info("%v : %v", string(m.Key), weather)
 	}
 }

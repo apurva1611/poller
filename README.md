@@ -1,5 +1,6 @@
 # poller
 "Pipeline chec]]]k"
+demo changes for assignment6
 #### Team Information
 | Name  | NEU ID | Email Address
 | ------------- | ------------- | ------------- |
@@ -21,4 +22,4 @@ Docker commands:
 1. List images: sudo docker images
 2. Delete images: sudo docker rmi -f 07798c70faa
 
-"Check pipeline trigger second che
+"Check pipeline trigger second check"

@@ -6,11 +6,12 @@ import (
 	"poller/db"
 	"poller/kafka"
 	"strconv"
-	log "github.com/sirupsen/logrus"
+
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
-const kafkaURL = "kafka:9092"
+const kafkaURL = "app-prereq-kafka.monitoring:9092"
 
 func main() {
 	db.Init()

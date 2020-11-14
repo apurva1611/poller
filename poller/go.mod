@@ -9,5 +9,6 @@ require (
 	github.com/golang/snappy v0.0.2 // indirect
 	github.com/pierrec/lz4 v2.5.2+incompatible // indirect
 	github.com/segmentio/kafka-go v0.2.2
+	github.com/sirupsen/logrus v1.7.0
 	golang.org/x/net v0.0.0-20201010224723-4f7140c49acb // indirect
 )

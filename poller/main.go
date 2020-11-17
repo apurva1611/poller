@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"poller/db"
@@ -10,9 +8,10 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
-const kafkaURL = "kafka:9092"
+const kafkaURL = "app-prereq-kafka:9092"
 
 func main() {
 	db.Init()
@@ -33,7 +32,6 @@ func main() {
 
 	go kafka.Consume(kafkaURL, consumeTopic, consumeGroup)
 
-	fmt.Println("now to producer")
 	go kafka.Produce(kafkaURL, produceTopic, minutes)
 
 	router := SetupRouter()
@@ -47,26 +45,12 @@ func SetupRouter() *gin.Engine {
 	return router
 }
 
-// func healthCheck(c *gin.Context) {
-// 	err := db.HealthCheck()
-// 	if err != nil {
-// 		c.JSON(http.StatusInternalServerError, "db health check failed.")
-// 		os.Exit(5)
-// 	}
-
-// 	err = kafka.HealthCheck(kafkaURL)
-// 	if err != nil {
-// 		c.JSON(http.StatusInternalServerError, "kafka health check failed.")
-// 		os.Exit(6)
-// 	}
-
-// 	c.JSON(http.StatusOK, "ok")
-// }
-
 func healthCheck(c *gin.Context) {
-	//kafkaURL := "kafka:9092"
+	//kafkaURL := "app-prereq-kafka.monitoring:9092"
 	err := db.HealthCheck()
 	if err != nil {
+		log.Error("DB HEALTHCHECK: %s", err.Error())
+		log.Printf("DB HEALTHCHECK %s", err.Error())
 		c.JSON(http.StatusInternalServerError, "db health check failed.")
 		os.Exit(3)
 	}
@@ -74,9 +58,12 @@ func healthCheck(c *gin.Context) {
 	err = kafka.HealthCheck(kafkaURL)
 
 	if err != nil {
+		log.Error("KAFKA HEALTHCHECK %s", err.Error())
 		c.JSON(http.StatusInternalServerError, "kafka health check failed.")
 		os.Exit(4)
 	}
+
+	log.Info("HEALTHCHECK SUCCESSFUL")
 
 	c.JSON(http.StatusOK, "ok")
 }

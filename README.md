@@ -1,5 +1,5 @@
 # poller
-demo changes for assignment6
+demo changes for assignment7
 #### Team Information
 | Name  | NEU ID | Email Address
 | ------------- | ------------- | ------------- |

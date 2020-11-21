@@ -11,7 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const kafkaURL = "app-prereq-kafka.monitoring:9092"
+const kafkaURL = "app-prereq-kafka:9092"
 
 func main() {
 	db.Init()
@@ -46,7 +46,7 @@ func SetupRouter() *gin.Engine {
 }
 
 func healthCheck(c *gin.Context) {
-	//kafkaURL := "kafka:9092"
+	//kafkaURL := "app-prereq-kafka.monitoring:9092"
 	err := db.HealthCheck()
 	if err != nil {
 		log.Error("DB HEALTHCHECK: %s", err.Error())

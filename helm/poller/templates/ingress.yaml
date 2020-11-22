@@ -8,8 +8,8 @@ metadata:
     kubernetes.io/tls-acme: "true"
 spec:
   rules:
-  - host: app.prod.achirashah.com
-    http:
+  # - host: app.prod.achirashah.com
+  - http:
       paths:
       - path: /
         pathType: Prefix

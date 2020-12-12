@@ -17,7 +17,7 @@ import (
 var db *sql.DB
 
 const (
-	username = "adminuser"
+	username = "adminuser@poller-nstance"
 	password = "Pass1234"
 	// port     = ":3306"
 	dbname = "pollerdb"

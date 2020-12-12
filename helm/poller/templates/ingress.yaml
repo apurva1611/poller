@@ -9,7 +9,7 @@ metadata:
 spec:
   rules:
   - host: app.prod.apurvamathur.me
-    http:
+  - http:
       paths:
       - path: /
         pathType: Prefix

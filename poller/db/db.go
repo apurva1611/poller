@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"os"
 	"poller/model"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -16,10 +17,10 @@ import (
 var db *sql.DB
 
 const (
-	username = "root"
-	password = "pass1234"
-	port     = ":3306"
-	dbname   = "pollerdb"
+	username = "adminuser"
+	password = "Pass1234"
+	// port     = ":3306"
+	dbname = "pollerdb"
 )
 
 func Init() {
@@ -29,7 +30,7 @@ func Init() {
 
 func dsn() string {
 	rdsurl := os.Getenv("rdsurl")
-	hostname := rdsurl + port
+	hostname := rdsurl
 	return fmt.Sprintf("%s:%s@tcp(%s)/%s", username, password, hostname, dbname)
 }
 
@@ -184,7 +185,6 @@ func DeleteWatch(watch model.WATCH) {
 	fmt.Println("delete alert")
 	_, _ = db.Exec("DELETE FROM pollerdb.alert WHERE watch_id = ?", watch.ID)
 	log.Info("Delete alert query of pollerDb.alert succeeded")
-
 
 	fmt.Println("delete watch")
 	_, err := db.Exec("DELETE FROM pollerdb.watch WHERE watch_id = ?", watch.ID)
